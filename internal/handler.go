@@ -2,51 +2,86 @@ package internal
 
 import (
 	"context"
-	"strconv"
+	"encoding/json"
+	"sync"
 
 	porter "github.com/tuihub/protos/pkg/librarian/porter/v1"
+	librarian "github.com/tuihub/protos/pkg/librarian/v1"
 
 	"github.com/go-kratos/kratos/v2/errors"
 )
 
 type Handler struct {
+	porter.UnimplementedLibrarianPorterServiceServer
+	clientMap sync.Map
 }
 
 func NewHandler() *Handler {
-	return &Handler{}
+	return &Handler{
+		porter.UnimplementedLibrarianPorterServiceServer{},
+		sync.Map{},
+	}
 }
 
-func (h Handler) PullAccount(ctx context.Context, req *porter.PullAccountRequest) (
-	*porter.PullAccountResponse, error) {
-	return nil, errors.BadRequest("not supported", "")
+func (h *Handler) EnablePorter(ctx context.Context, req *porter.EnablePorterRequest) (
+	*porter.EnablePorterResponse, error) {
+	var contextIds []*librarian.InternalID
+	h.clientMap.Range(func(key, value interface{}) bool {
+		id, ok := key.(*librarian.InternalID)
+		if !ok {
+			return true
+		}
+		contextIds = append(contextIds, id)
+		return true
+	})
+	return &porter.EnablePorterResponse{
+		StatusMessage:    "",
+		NeedRefreshToken: false,
+		EnablesSummary: &porter.PorterEnablesSummary{
+			ContextIds:    contextIds,
+			FeedSetterIds: nil,
+			FeedGetterIds: nil,
+		},
+	}, nil
 }
 
-func (h Handler) PullApp(ctx context.Context, req *porter.PullAppRequest) (
-	*porter.PullAppResponse, error) {
-	return nil, errors.BadRequest("not supported", "")
+func (h *Handler) EnableContext(ctx context.Context, req *porter.EnableContextRequest) (
+	*porter.EnableContextResponse, error) {
+	var config PorterContext
+	err := json.Unmarshal([]byte(req.GetContextJson()), &config)
+	if err != nil {
+		return nil, errors.BadRequest("invalid context_json", "")
+	}
+	h.clientMap.Store(req.GetContextId(), config)
+	return &porter.EnableContextResponse{}, nil
 }
 
-func (h Handler) PullAccountAppRelation(ctx context.Context, req *porter.PullAccountAppRelationRequest) (
-	*porter.PullAccountAppRelationResponse, error) {
-	return nil, errors.BadRequest("not supported", "")
+func (h *Handler) DisableContext(ctx context.Context, req *porter.DisableContextRequest) (
+	*porter.DisableContextResponse, error) {
+	h.clientMap.Delete(req.GetContextId())
+	return &porter.DisableContextResponse{}, nil
 }
 
-func (h Handler) PullFeed(ctx context.Context, req *porter.PullFeedRequest) (
-	*porter.PullFeedResponse, error) {
-	return nil, errors.BadRequest("not supported", "")
-}
-
-func (h Handler) PushFeedItems(ctx context.Context, req *porter.PushFeedItemsRequest) (
+func (h *Handler) PushFeedItems(ctx context.Context, req *porter.PushFeedItemsRequest) (
 	*porter.PushFeedItemsResponse, error) {
+	var config PushFeedItems
+	err := json.Unmarshal([]byte(req.GetDestination().GetConfigJson()), &config)
+	if err != nil {
+		return nil, errors.BadRequest("invalid config_json", "")
+	}
+	clientAny, ok := h.clientMap.Load(req.GetDestination().GetContextId())
+	if !ok {
+		return nil, errors.BadRequest("context not found", "")
+	}
+	client, ok := clientAny.(PorterContext)
+	if !ok {
+		return nil, errors.BadRequest("invalid context", "")
+	}
 	messages := make(map[string]string)
 	for _, item := range req.GetItems() {
 		messages[item.GetTitle()] = item.GetLink()
 	}
-	channelIDInt64, err := strconv.ParseInt(req.GetChannelId(), 10, 64)
-	if err != nil {
-		return nil, errors.BadRequest("invalid channel_id", "")
-	}
-	err = SendBatch(ctx, req.GetToken(), channelIDInt64, messages)
+	err = SendBatch(ctx, client.Token, config.ChannelID, messages)
 	if err != nil {
 		return nil, err
 	}

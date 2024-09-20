@@ -18,20 +18,32 @@ var (
 )
 
 func main() {
-	config := tuihub.PorterConfig{
-		Name:       "tuihub-telegram",
-		Version:    version,
+	contextSchema := tuihub.MustReflectJSONSchema(new(internal.PorterContext))
+	config := &porter.GetPorterInformationResponse{
+		BinarySummary: &librarian.PorterBinarySummary{
+			SourceCodeAddress: "https://github.com/tuihub/tuihub-telegram",
+			BuildVersion:      version,
+			BuildDate:         "",
+			Name:              "tuihub-telegram",
+			Version:           version,
+			Description:       "",
+		},
 		GlobalName: "github.com/tuihub/tuihub-telegram",
-		FeatureSummary: &porter.PorterFeatureSummary{
-			SupportedAccounts:    nil,
-			SupportedAppSources:  nil,
-			SupportedFeedSources: nil,
-			SupportedNotifyDestinations: []string{
-				tuihub.WellKnownToString(
-					librarian.WellKnownNotifyDestination_WELL_KNOWN_NOTIFY_DESTINATION_TELEGRAM,
-				),
+		Region:     "",
+		FeatureSummary: &porter.PorterFeatureSummary{ //nolint:exhaustruct // no need
+			NotifyDestinations: []*librarian.FeatureFlag{
+				{
+					Id: tuihub.WellKnownToString(
+						librarian.WellKnownNotifyDestination_WELL_KNOWN_NOTIFY_DESTINATION_TELEGRAM,
+					),
+					Name:             "Telegram",
+					Description:      "",
+					ConfigJsonSchema: tuihub.MustReflectJSONSchema(new(internal.PushFeedItems)),
+					RequireContext:   true,
+				},
 			},
 		},
+		ContextJsonSchema: &contextSchema,
 	}
 	server, err := tuihub.NewPorter(
 		context.Background(),
