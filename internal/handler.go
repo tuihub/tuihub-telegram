@@ -27,11 +27,11 @@ func (h *Handler) EnablePorter(ctx context.Context, req *porter.EnablePorterRequ
 	*porter.EnablePorterResponse, error) {
 	var contextIds []*librarian.InternalID
 	h.clientMap.Range(func(key, value interface{}) bool {
-		id, ok := key.(*librarian.InternalID)
+		id, ok := key.(int64)
 		if !ok {
 			return true
 		}
-		contextIds = append(contextIds, id)
+		contextIds = append(contextIds, &librarian.InternalID{Id: id})
 		return true
 	})
 	return &porter.EnablePorterResponse{
@@ -50,15 +50,15 @@ func (h *Handler) EnableContext(ctx context.Context, req *porter.EnableContextRe
 	var config PorterContext
 	err := json.Unmarshal([]byte(req.GetContextJson()), &config)
 	if err != nil {
-		return nil, errors.BadRequest("invalid context_json", "")
+		return nil, errors.BadRequest("invalid context_json", err.Error())
 	}
-	h.clientMap.Store(req.GetContextId(), config)
+	h.clientMap.Store(req.GetContextId().GetId(), config)
 	return &porter.EnableContextResponse{}, nil
 }
 
 func (h *Handler) DisableContext(ctx context.Context, req *porter.DisableContextRequest) (
 	*porter.DisableContextResponse, error) {
-	h.clientMap.Delete(req.GetContextId())
+	h.clientMap.Delete(req.GetContextId().GetId())
 	return &porter.DisableContextResponse{}, nil
 }
 
@@ -67,9 +67,9 @@ func (h *Handler) PushFeedItems(ctx context.Context, req *porter.PushFeedItemsRe
 	var config PushFeedItems
 	err := json.Unmarshal([]byte(req.GetDestination().GetConfigJson()), &config)
 	if err != nil {
-		return nil, errors.BadRequest("invalid config_json", "")
+		return nil, errors.BadRequest("invalid config_json", err.Error())
 	}
-	clientAny, ok := h.clientMap.Load(req.GetDestination().GetContextId())
+	clientAny, ok := h.clientMap.Load(req.GetDestination().GetContextId().GetId())
 	if !ok {
 		return nil, errors.BadRequest("context not found", "")
 	}

@@ -5,5 +5,5 @@ type PorterContext struct {
 }
 
 type PushFeedItems struct {
-	ChannelID int64 `json:"channel_id" jsonschema:"title=Channel ID"`
+	ChannelID int64 `json:"channel_id,string" jsonschema:"title=Channel ID"`
 }
