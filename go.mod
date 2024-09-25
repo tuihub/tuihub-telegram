@@ -7,8 +7,8 @@ toolchain go1.22.6
 require (
 	github.com/go-kratos/kratos/v2 v2.8.0
 	github.com/nikoksr/notify v0.41.0
-	github.com/tuihub/protos v0.4.20
-	github.com/tuihub/tuihub-go v0.0.14
+	github.com/tuihub/protos v0.4.23
+	github.com/tuihub/tuihub-go v0.0.16
 )
 
 require (
@@ -21,6 +21,7 @@ require (
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20240627104009-3198e0b83bf2 // indirect
 	github.com/go-playground/form/v4 v4.2.1 // indirect
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible // indirect
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/consul/api v1.29.1 // indirect
@@ -48,7 +49,7 @@ require (
 	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240701130421-f6361c86f094 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240624140628-dc46fd24d27d // indirect
-	google.golang.org/grpc v1.65.0 // indirect
+	google.golang.org/grpc v1.66.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
