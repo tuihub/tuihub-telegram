@@ -30,7 +30,7 @@ func main() {
 		},
 		GlobalName: "github.com/tuihub/tuihub-telegram",
 		Region:     "",
-		FeatureSummary: &porter.PorterFeatureSummary{ //nolint:exhaustruct // no need
+		FeatureSummary: &librarian.FeatureSummary{ //nolint:exhaustruct // no need
 			NotifyDestinations: []*librarian.FeatureFlag{
 				{
 					Id: tuihub.WellKnownToString(

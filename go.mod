@@ -21,7 +21,6 @@ require (
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20240627104009-3198e0b83bf2 // indirect
 	github.com/go-playground/form/v4 v4.2.1 // indirect
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible // indirect
-	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/consul/api v1.29.1 // indirect
